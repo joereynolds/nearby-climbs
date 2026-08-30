@@ -40,3 +40,16 @@ request = urllib.request.Request(
 with urllib.request.urlopen(request) as response:
     result = response.read().decode("utf-8").strip()
     print(result)
+
+# Improvements:
+# take a --limit param
+# take a --radius param
+# take a --location param
+#
+# Cache each call and save in XDG_DATA_HOME.
+# For example:
+# sc --radius 10
+# result would get cached and saved in XDG_DATA_HOME so we don't hammer the API
+#
+# Link the OSM url or something
+
