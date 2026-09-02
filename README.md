@@ -1,6 +1,6 @@
 # SC
 
-Shitty python script to grab all climbing walls near me (both indoor and outdoor).
+sport=climbing (sc) is a script that will grab all indoor and outdoor climbing walls near you.
 
 <img width="513" height="487" alt="image" src="https://github.com/user-attachments/assets/94a2ef7f-a2d6-46f0-ba5f-23593d95fd1d" />
 

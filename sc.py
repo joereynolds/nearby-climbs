@@ -18,6 +18,7 @@ parser.add_argument(
     '-l',
     '--limit',
     help="How many climbs to return",
+    type=int,
     default=20,
 )
 
@@ -25,16 +26,12 @@ parser.add_argument(
     '-r',
     '--radius',
     help="The search radius from your location in miles",
+    type=int,
     default=15
 )
 
-parser.add_argument(
-    '-v',
-    '--verbose',
-)
+parser.add_argument('-v', '--verbose')
 
-print('done')
-exit()
 args = parser.parse_args()
 
 location_data = json.loads(urllib.request.urlopen(location_url).read())
@@ -50,7 +47,7 @@ min_lon, max_lon = round(lon - lon_adjustment, 3), round(lon + lon_adjustment, 3
 bbox = f"({min_lat},{min_lon},{max_lat},{max_lon})"
 
 query = f"""
-[out:csv("name"; false; "")][timeout:10];
+[out:csv("name"; false; "")];
 (
   nwr["sport"="climbing"][name]{bbox};
 );
