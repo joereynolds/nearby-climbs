@@ -5,10 +5,36 @@ import json
 import math
 import urllib.request
 
+
+def calculate_distance(
+    lat1: float,
+    lon1: float,
+    lat2: float,
+    lon2: float,
+) -> float:
+    """Gets straight-line distance between two lat/lon pairs in miles"""
+    R = 6371.0
+
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+
+    # Haversine formula
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1))
+        * math.cos(math.radians(lat2))
+        * math.sin(dlon / 2) ** 2
+    )
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+    distance_km = R * c
+    distance_miles = distance_km * 0.621371
+
+    return distance_miles
+
 location_url = "https://ipinfo.io/json"
 # overpass_url = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
 overpass_url = "http://localhost:8080/api/interpreter"
-
 
 parser = argparse.ArgumentParser(
     prog="sc",
@@ -37,6 +63,9 @@ args = parser.parse_args()
 
 location_data = json.loads(urllib.request.urlopen(location_url).read())
 
+# this isn't my real location, creeps
+location_data = {"loc": "53.193458, -2.883632"}
+
 lat, lon = map(float, location_data["loc"].split(","))
 
 lat_adjustment = args.radius / 69
@@ -52,7 +81,7 @@ query = f"""
 (
   nwr["sport"="climbing"][name]{bbox};
 );
-out tags {args.limit};
+out center {args.limit};
 """
 
 data = query.encode("utf-8")
@@ -64,10 +93,18 @@ with urllib.request.urlopen(request) as response:
     results = response.read().decode("utf-8").strip().split("\n")
 
     for line in results:
-        osm_type, osm_id, lat, lon, name = line.split(",")
+        osm_type, osm_id, osm_lat, osm_lon, name = line.split(",")
+
+        try:
+            distance = calculate_distance(
+                lat, lon,
+                float(osm_lat), float(osm_lon)
+            )
+        except ValueError:
+            distance = "Unknown"
 
         url = f"https://www.openstreetmap.org/{osm_type}/{osm_id}"
-        print(f"{name[0:34]:<35} ({url})")
+        print(f"{name[0:34]:<35} ({int(distance)} miles away) ({url})")
 
 # Improvements:
 # take a --location param
