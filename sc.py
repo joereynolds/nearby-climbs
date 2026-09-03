@@ -6,7 +6,8 @@ import math
 import urllib.request
 
 location_url = "https://ipinfo.io/json"
-overpass_url = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+# overpass_url = "https://maps.mail.ru/osm/tools/overpass/api/interpreter"
+overpass_url = "http://localhost:8080/api/interpreter"
 
 
 parser = argparse.ArgumentParser(
@@ -47,7 +48,7 @@ min_lon, max_lon = round(lon - lon_adjustment, 3), round(lon + lon_adjustment, 3
 bbox = f"({min_lat},{min_lon},{max_lat},{max_lon})"
 
 query = f"""
-[out:csv("name"; false; "")];
+[out:csv(::type, ::id, ::lat, ::lon, "name"; false; ",")];
 (
   nwr["sport"="climbing"][name]{bbox};
 );
@@ -56,14 +57,17 @@ out tags {args.limit};
 
 data = query.encode("utf-8")
 
-request = urllib.request.Request(
-    overpass_url,
-    data=data,
-)
+request = urllib.request.Request(overpass_url, data=data)
 
 with urllib.request.urlopen(request) as response:
-    result = response.read().decode("utf-8").strip()
-    print(result)
+
+    results = response.read().decode("utf-8").strip().split("\n")
+
+    for line in results:
+        osm_type, osm_id, lat, lon, name = line.split(",")
+
+        url = f"https://www.openstreetmap.org/{osm_type}/{osm_id}"
+        print(f"{name[0:34]:<35} ({url})")
 
 # Improvements:
 # take a --location param
